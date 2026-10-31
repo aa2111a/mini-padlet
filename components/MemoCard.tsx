@@ -1,5 +1,6 @@
 "use client";
 
+import { useDialog } from "@/lib/useDialog";
 import { useState } from "react";
 import { LoaderCircle, MoreHorizontal, Trash2, X } from "lucide-react";
 import type { Memo } from "@/lib/types";
@@ -20,6 +21,8 @@ export default function MemoCard({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+
+  useDialog(deleteOpen, () => { if (!deleting) setDeleteOpen(false); });
 
   async function removeMemo() {
     if (!isAdmin && !/^\d{4}$/.test(password)) {
@@ -107,7 +110,7 @@ export default function MemoCard({
 
       {deleteOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/25 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+          <div role="dialog" aria-modal="true" aria-label="?? ?? ??" className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold tracking-[0.16em] text-rose-600">
@@ -138,6 +141,8 @@ export default function MemoCard({
                   onChange={(event) =>
                     setPassword(event.target.value.replace(/\D/g, "").slice(0, 4))
                   }
+                  type="password"
+                  maxLength={4}
                   inputMode="numeric"
                   autoComplete="current-password"
                   className="h-11 w-full rounded-xl border border-slate-200 px-3 font-mono tracking-[0.35em] outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"

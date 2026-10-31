@@ -1,3 +1,4 @@
+import { guardRequest } from "@/lib/requestGuard";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { isFourDigitPassword, verifyPassword } from "@/lib/password";
@@ -6,6 +7,8 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const blocked = await guardRequest(request, "memo-delete", 15);
+    if (blocked) return blocked;
     const body = await request.json();
     if (typeof body.id !== "string" || !isFourDigitPassword(body.password)) {
       return NextResponse.json(

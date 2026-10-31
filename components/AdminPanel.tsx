@@ -1,5 +1,6 @@
 "use client";
 
+import { useDialog } from "@/lib/useDialog";
 import { useState } from "react";
 import { LoaderCircle, LogOut, ShieldCheck, Trash2, X } from "lucide-react";
 
@@ -20,6 +21,8 @@ export default function AdminPanel({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
+
+  useDialog(open, () => { if (!loading) onClose(); });
 
   if (!open) return null;
 
@@ -67,7 +70,7 @@ export default function AdminPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/25 backdrop-blur-[2px]">
-      <div className="h-full w-full max-w-md border-l border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div role="dialog" aria-modal="true" aria-label="??? ??" className="h-full w-full max-w-md border-l border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold tracking-[0.18em] text-sky-600">

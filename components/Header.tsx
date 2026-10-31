@@ -1,84 +1,32 @@
 "use client";
-
-import { Search, Share2, Shield } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Search, Share2, Shield, X, StickyNote } from "lucide-react";
 import SyncButton from "./SyncButton";
 
-export default function Header({
-  search,
-  onSearch,
-  onSync,
-  syncing,
-  onShare,
-  onAdmin,
-  isAdmin,
-}: {
-  search: string;
-  onSearch: (value: string) => void;
-  onSync: () => void;
-  syncing: boolean;
-  onShare: () => void;
-  onAdmin: () => void;
-  isAdmin: boolean;
+export default function Header({ search, onSearch, onSync, syncing, onShare, onAdmin, isAdmin }: {
+  search: string; onSearch: (value: string) => void; onSync: () => void;
+  syncing: boolean; onShare: () => void; onAdmin: () => void; isAdmin: boolean;
 }) {
+  const [searchOpen, setSearchOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-[0.22em] text-sky-600">
-              INSTANT BOARD
-            </span>
-            {isAdmin && (
-              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
-                ADMIN MODE
-              </span>
-            )}
-          </div>
-          <div className="mt-0.5 flex items-baseline gap-2">
-            <h1 className="truncate text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
-              MINDLET
-            </h1>
-            <p className="hidden text-sm text-slate-500 md:block">
-              개인용 메모 보드
-            </p>
-          </div>
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+      <div className="flex min-h-20 items-center justify-between gap-3 px-5 sm:px-10">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="MINDLET ?">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500 text-white"><StickyNote size={20} strokeWidth={1.8} /></span>
+          <span className="text-[16px] font-extrabold tracking-[0.13em] text-slate-800">MINDLET</span>
+        </Link>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button onClick={() => setSearchOpen(!searchOpen)} className="tool-button" aria-label="?? ??" aria-expanded={searchOpen}>{searchOpen ? <X size={18}/> : <Search size={18}/>}</button>
+          <SyncButton onSync={onSync} syncing={syncing}/>
+          <button onClick={onShare} className="tool-button" aria-label="?? ?? ??"><Share2 size={17}/><span className="hidden sm:inline">??</span></button>
+          <span className="mx-1 h-5 w-px bg-slate-200"/>
+          <button onClick={onAdmin} className="tool-button" aria-label="??? ?? ??"><Shield size={17}/><span className="hidden sm:inline">???</span></button>
         </div>
-
-        <label className="relative hidden w-full max-w-xs md:block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(event) => onSearch(event.target.value)}
-            placeholder="메모 검색"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
-          />
-        </label>
-
-        <div className="flex items-center gap-2">
-          <SyncButton onSync={onSync} syncing={syncing} />
-          <button
-            type="button"
-            onClick={onShare}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100"
-            aria-label="보드 공유 링크 복사"
-          >
-            <Share2 className="h-4 w-4" />
-            <span className="hidden sm:inline">공유</span>
-          </button>
-          <button
-            type="button"
-            onClick={onAdmin}
-            className={`inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-sm font-medium shadow-sm transition ${
-              isAdmin
-                ? "border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100"
-                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-            }`}
-            aria-label="관리자 패널 열기"
-          >
-            <Shield className="h-4 w-4" />
-            <span className="hidden lg:inline">관리자</span>
-          </button>
-        </div>
+      </div>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-t border-slate-100 px-6 py-7 sm:px-12 sm:py-8">
+        <div><div className="flex items-center gap-3"><h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">VIBE Coding</h1>{isAdmin && <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-700">ADMIN MODE</span>}</div><p className="mt-2 text-[13px] text-slate-400">??? ?? ??</p></div>
+        {searchOpen && <label className="relative w-full sm:w-72"><Search className="absolute left-3 top-3 text-slate-400" size={16}/><input autoFocus value={search} onChange={e => onSearch(e.target.value)} placeholder="?? ??" aria-label="?? ??" className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-8 text-sm outline-none focus:border-sky-400"/>{search && <button onClick={() => onSearch("")} className="absolute right-3 top-3 text-slate-400" aria-label="?? ???"><X size={15}/></button>}</label>}
       </div>
     </header>
   );

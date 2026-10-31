@@ -38,7 +38,7 @@ export default function Board() {
         const { data, error } = await supabase
           .from("memos")
           .select("id,title,content,created_at")
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: true });
 
         if (error) throw error;
         setMemos((data ?? []) as Memo[]);
@@ -64,7 +64,7 @@ export default function Board() {
       void supabase
         .from("memos")
         .select("id,title,content,created_at")
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: true })
         .then(({ data, error }) => {
           if (!active) return;
           if (error) {
@@ -114,14 +114,9 @@ export default function Board() {
     );
   }, [memos, search]);
 
-  async function afterCreate() {
-    await loadMemos();
+  async function afterCreate(memo: Memo) {
+    setMemos((current) => [...current, memo]);
     notify("새 메모를 붙였습니다.", "success");
-  }
-
-  async function afterDelete(message: string) {
-    await loadMemos();
-    notify(message, "success");
   }
 
   async function deleteAll() {
@@ -154,16 +149,6 @@ export default function Board() {
       />
 
       <main className="mx-auto min-h-[calc(100vh-73px)] max-w-[1500px] px-4 pb-28 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-        <label className="mb-5 block md:hidden">
-          <span className="sr-only">메모 검색</span>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="메모 검색"
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-          />
-        </label>
-
         {filteredMemos.length > 0 && (
           <section className="memo-grid" aria-label="메모 목록">
             {filteredMemos.map((memo, index) => (
@@ -172,7 +157,7 @@ export default function Board() {
                 memo={memo}
                 index={index}
                 isAdmin={isAdmin}
-                onDeleted={afterDelete}
+                onDeleted={(message) => { setMemos((current) => current.filter((item) => item.id !== memo.id)); notify(message, "success"); return Promise.resolve(); }}
               />
             ))}
           </section>

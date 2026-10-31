@@ -1,33 +1,25 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import "server-only";
+import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 
 export const ADMIN_COOKIE = "mindlet_admin";
-const SESSION_VALUE = "mindlet-admin-v1";
-
-function signingSecret() {
-  const secret =
-    process.env.ADMIN_SESSION_SECRET ?? process.env.ADMIN_PASSWORD_HASH;
-  if (!secret) throw new Error("관리자 세션 환경 변수가 설정되지 않았습니다.");
-  return secret;
+function signature(payload: string) {
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret || secret.length < 32) throw new Error("ADMIN_SESSION_SECRET must contain at least 32 characters");
+  return createHmac("sha256", secret).update(payload).digest("hex");
 }
-
-function signature() {
-  return createHmac("sha256", signingSecret())
-    .update(SESSION_VALUE)
-    .digest("hex");
-}
-
 export function createAdminSessionToken() {
-  return `${SESSION_VALUE}.${signature()}`;
+  const payload = `${Date.now() + 8 * 60 * 60 * 1000}.${randomBytes(16).toString("hex")}`;
+  return `${payload}.${signature(payload)}`;
 }
-
 export async function isAdminRequest() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) return false;
-
-  const expected = createAdminSessionToken();
-  const left = Buffer.from(token);
-  const right = Buffer.from(expected);
-
-  return left.length === right.length && timingSafeEqual(left, right);
+  const parts = token.split(".");
+  if (parts.length !== 3 || !/^\d+$/.test(parts[0]) || Number(parts[0]) <= Date.now()) return false;
+  try {
+    const expected = Buffer.from(signature(`${parts[0]}.${parts[1]}`));
+    const received = Buffer.from(parts[2]);
+    return expected.length === received.length && timingSafeEqual(expected, received);
+  } catch { return false; }
 }

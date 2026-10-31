@@ -1,3 +1,4 @@
+import { guardRequest } from "@/lib/requestGuard";
 import { NextResponse } from "next/server";
 import { getSupabaseServerAnon } from "@/lib/supabaseAdmin";
 import { hashPassword, isFourDigitPassword } from "@/lib/password";
@@ -6,6 +7,8 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const blocked = await guardRequest(request, "memo-create", 30);
+    if (blocked) return blocked;
     const body = await request.json();
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const content = typeof body.content === "string" ? body.content.trim() : "";

@@ -1,5 +1,7 @@
 "use client";
 
+import type { Memo } from "@/lib/types";
+import { useDialog } from "@/lib/useDialog";
 import { useState } from "react";
 import { LoaderCircle, X } from "lucide-react";
 
@@ -10,13 +12,15 @@ export default function MemoFormModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreated: () => Promise<void>;
+  onCreated: (memo: Memo) => Promise<void>;
 }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useDialog(open, () => { if (!submitting) onClose(); });
 
   if (!open) return null;
 
@@ -51,7 +55,7 @@ export default function MemoFormModal({
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "메모를 저장하지 못했습니다.");
 
-      await onCreated();
+      await onCreated(result.memo);
       closeAndReset();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "메모를 저장하지 못했습니다.");
@@ -125,6 +129,8 @@ export default function MemoFormModal({
               onChange={(event) =>
                 setPassword(event.target.value.replace(/\D/g, "").slice(0, 4))
               }
+              type="password"
+              maxLength={4}
               inputMode="numeric"
               autoComplete="new-password"
               className="h-11 w-full rounded-xl border border-slate-200 px-3 font-mono tracking-[0.35em] outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
